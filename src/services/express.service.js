@@ -1,14 +1,16 @@
+import express from "express";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import fs from "fs";
-import { Sequelize } from "sequelize";
-import databaseConfig from "../config/database.js"; // make sure this file uses ES modules syntax too!
+import bodyParser from "body-parser";
+import globalErrorHandler from "../middlewares/errorHandler.middleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const modelFiles = fs
-  .readdirSync(path.join(__dirname, "../models"))
+const routesPath = path.join(__dirname, "../routes");
+const routeFiles = fs
+  .readdirSync(routesPath)
   .filter((file) => file.endsWith(".js"));
 
 const expressService = {
@@ -16,10 +18,8 @@ const expressService = {
     try {
       const server = express();
 
-      // Load routes dynamically and use each as middleware
       for (const file of routeFiles) {
         const routeModule = await import(`../routes/${file}`);
-        // Assume each route module exports one router object
         const route = routeModule.default || Object.values(routeModule)[0];
         server.use(route);
       }

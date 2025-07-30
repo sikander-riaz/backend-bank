@@ -1,34 +1,41 @@
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
 import { Sequelize } from "sequelize";
 import databaseConfig from "../config/database.js";
 
-import fs from "fs";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const modelFiles = fs
-  .readdirSync(__dirname + "/../models/")
+  .readdirSync(path.join(__dirname, "../models"))
   .filter((file) => file.endsWith(".js"));
 
 const sequelizeService = {
   init: async () => {
     try {
-      let connection = new Sequelize(databaseConfig);
+      const connection = new Sequelize(databaseConfig);
 
-      /*
-        Loading models automatically
-      */
-
+      // Initialize models
       for (const file of modelFiles) {
         const model = await import(`../models/${file}`);
         model.default.init(connection);
       }
 
-      modelFiles.map(async (file) => {
+      // Setup associations if any
+      for (const file of modelFiles) {
         const model = await import(`../models/${file}`);
-        model.default.associate && model.default.associate(connection.models);
-      });
+        if (model.default.associate) {
+          model.default.associate(connection.models);
+        }
+      }
 
       console.log("[SEQUELIZE] Database service initialized");
     } catch (error) {
-      console.log("[SEQUELIZE] Error during database service initialization");
+      console.error(
+        "[SEQUELIZE] Error during database service initialization",
+        error
+      );
       throw error;
     }
   },
