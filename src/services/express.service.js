@@ -1,40 +1,43 @@
-import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 import fs from "fs";
-import bodyParser from "body-parser";
-import globalErrorHandler from "../middlewares/errorHandler.middleware.js";
+import { Sequelize } from "sequelize";
+import databaseConfig from "../config/database.js"; // make sure this file uses ES modules syntax too!
 
-/*
-  body-parser: Parse incoming request bodies in a middleware before your handlers, 
-  available under the req.body property.
-*/
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const routeFiles = fs
-  .readdirSync(__dirname + "../src/routes/")
+const modelFiles = fs
+  .readdirSync(path.join(__dirname, "../models"))
   .filter((file) => file.endsWith(".js"));
-
-let server;
-let routes = [];
 
 const expressService = {
   init: async () => {
     try {
-      /*
-        Loading routes automatically
-      */
+      const server = express();
+
+      // Load routes dynamically and use each as middleware
       for (const file of routeFiles) {
-        const route = await import(`../routes/${file}`);
-        const routeName = Object.keys(route)[0];
-        routes.push(route[routeName]);
+        const routeModule = await import(`../routes/${file}`);
+        // Assume each route module exports one router object
+        const route = routeModule.default || Object.values(routeModule)[0];
+        server.use(route);
       }
 
-      server = express();
       server.use(bodyParser.json());
-      server.use(routes);
       server.use(globalErrorHandler);
-      server.listen(process.env.SERVER_PORT);
+
+      const port = process.env.SERVER_PORT || 3000;
+      server.listen(port, () => {
+        console.log(`[EXPRESS] Server listening on port ${port}`);
+      });
+
       console.log("[EXPRESS] Express initialized");
     } catch (error) {
-      console.log("[EXPRESS] Error during express service initialization");
+      console.error(
+        "[EXPRESS] Error during express service initialization",
+        error
+      );
       throw error;
     }
   },
