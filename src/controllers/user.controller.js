@@ -1,13 +1,12 @@
 import * as Yup from "yup";
-import Address from "../models/Address";
-import User from "../models/User";
+import User from "../models/User.js";
 import {
   BadRequestError,
   UnauthorizedError,
   ValidationError,
-} from "../utils/ApiError";
+} from "../utils/ApiError.js";
 
-//Yup is a JavaScript schema builder for value parsing and validation.
+// Yup is a JavaScript schema builder for value parsing and validation.
 
 const userController = {
   add: async (req, res, next) => {
@@ -33,14 +32,10 @@ const userController = {
 
       const { email } = req.body;
 
-      const userExists = await User.findOne({
-        where: { email },
-      });
-
+      const userExists = await User.findOne({ where: { email } });
       if (userExists) throw new BadRequestError();
 
       const user = await User.create(req.body);
-
       return res.status(200).json(user);
     } catch (error) {
       next(error);
@@ -50,7 +45,6 @@ const userController = {
   get: async (req, res, next) => {
     try {
       const users = await User.findAll();
-
       return res.status(200).json(users);
     } catch (error) {
       next(error);
@@ -61,7 +55,6 @@ const userController = {
     try {
       const { id } = req.params;
       const user = await User.findByPk(id);
-
       if (!user) throw new BadRequestError();
 
       return res.status(200).json(user);
@@ -78,33 +71,21 @@ const userController = {
         oldPassword: Yup.string().min(6),
         password: Yup.string()
           .min(6)
-          .when("oldPassword", (oldPassword, field) => {
-            if (oldPassword) {
-              return field.required();
-            } else {
-              return field;
-            }
-          }),
-        confirmPassword: Yup.string().when("password", (password, field) => {
-          if (password) {
-            return field.required().oneOf([Yup.ref("password")]);
-          } else {
-            return field;
-          }
-        }),
+          .when("oldPassword", (oldPassword, field) =>
+            oldPassword ? field.required() : field
+          ),
+        confirmPassword: Yup.string().when("password", (password, field) =>
+          password ? field.required().oneOf([Yup.ref("password")]) : field
+        ),
       });
 
       if (!(await schema.isValid(req.body))) throw new ValidationError();
 
       const { email, oldPassword } = req.body;
-
       const user = await User.findByPk(req.userId);
 
       if (email) {
-        const userExists = await User.findOne({
-          where: { email },
-        });
-
+        const userExists = await User.findOne({ where: { email } });
         if (userExists) throw new BadRequestError();
       }
 
@@ -112,7 +93,6 @@ const userController = {
         throw new UnauthorizedError();
 
       const newUser = await user.update(req.body);
-
       return res.status(200).json(newUser);
     } catch (error) {
       next(error);
@@ -125,8 +105,7 @@ const userController = {
       const user = await User.findByPk(id);
       if (!user) throw new BadRequestError();
 
-      user.destroy();
-
+      await user.destroy();
       return res.status(200).json({ msg: "Deleted" });
     } catch (error) {
       next(error);

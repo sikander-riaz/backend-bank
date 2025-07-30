@@ -1,7 +1,10 @@
+// src/routes/transaction.routes.js
+
 import { Router } from "express";
 import transactionController from "../controllers/transaction.controller.js";
 
-const addressRoutes = Router();
-addressRoutes.post("/transaction", addressController.add);
+const router = Router();
 
-export { addressRoutes };
+router.post("/add", transactionController.create); // ✅ matches controller
+
+export default router;

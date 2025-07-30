@@ -1,32 +1,29 @@
-import * as Yup from "yup";
-import Address from "../models/Address.js";
-import { BadRequestError, ValidationError } from "../utils/ApiError.js";
+// src/controllers/transaction.controller.js
 
-const addressController = {
-  add: async (req, res, next) => {
+import Transaction from "../models/Transaction.js";
+import { BadRequestError } from "../utils/ApiError.js";
+
+const transactionController = {
+  create: async (req, res, next) => {
     try {
-      const schema = Yup.object().shape({
-        city: Yup.string().required(),
-        state: Yup.string().required(),
-        neighborhood: Yup.string().required(),
-        country: Yup.string().required(),
+      const { acc_number, from_account, to_account, amount } = req.body;
+
+      if (!acc_number || !from_account || !to_account || !amount) {
+        throw new BadRequestError("Missing required fields");
+      }
+
+      const transaction = await Transaction.create({
+        acc_number,
+        from_account,
+        to_account,
+        amount,
       });
 
-      if (!(await schema.isValid(req.body))) throw new ValidationError();
-
-      const addressExists = await Address.findOne({
-        where: { ...req.body },
-      });
-
-      if (addressExists) throw new BadRequestError();
-
-      const address = await Address.create(req.body);
-
-      return res.status(200).json(address);
+      return res.status(201).json(transaction);
     } catch (error) {
       next(error);
     }
   },
 };
 
-export default addressController;
+export default transactionController;

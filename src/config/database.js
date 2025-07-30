@@ -1,14 +1,11 @@
-import "dotenv/config";
+// src/config/database.js
+import dotenv from "dotenv";
+dotenv.config();
 
-const databaseConfig = {
-  dialect: process.env.DB_DIALECT,
-  host: process.env.DB_HOST,
+export default {
   username: process.env.DB_USER,
-  password: process.env.DB_PASS,
+  password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  define: {
-    timestamps: true,
-  },
+  host: process.env.DB_HOST || "localhost",
+  dialect: "postgres",
 };
-
-export default databaseConfig;
