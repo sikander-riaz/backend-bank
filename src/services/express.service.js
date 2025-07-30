@@ -21,7 +21,7 @@ const expressService = {
       for (const file of routeFiles) {
         const routeModule = await import(`../routes/${file}`);
         const route = routeModule.default || Object.values(routeModule)[0];
-        server.use(route);
+        server.use("/api", route);
       }
 
       server.use(bodyParser.json());
