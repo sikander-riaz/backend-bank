@@ -1,14 +1,15 @@
 import express from "express";
 import fs from "fs";
 import bodyParser from "body-parser";
-import globalErrorHandler from "../middlewares/errorHandler.middleware";
+import globalErrorHandler from "../middlewares/errorHandler.middleware.js";
+
 /*
   body-parser: Parse incoming request bodies in a middleware before your handlers, 
   available under the req.body property.
 */
 
 const routeFiles = fs
-  .readdirSync(__dirname + "/../routes/")
+  .readdirSync(__dirname + "../src/routes/")
   .filter((file) => file.endsWith(".js"));
 
 let server;

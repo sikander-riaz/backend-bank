@@ -52,7 +52,7 @@ class BaseError extends Error {
 /**
  * @class ApiError
  */
-class ApiError extends BaseError {
+export class ApiError extends BaseError {
   constructor(message, statusCode, type) {
     super(message, statusCode, type, true);
   }
