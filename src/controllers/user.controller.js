@@ -15,7 +15,6 @@ const userController = {
         name: Yup.string()
           .min(2, "Name must be at least 2 characters")
           .required("Name is required"),
-
         email: Yup.string()
           .email("Invalid email format")
           .required("Email is required"),
@@ -26,6 +25,9 @@ const userController = {
           .matches(/\d/, "Must contain at least one number")
           .matches(/[!@#$%^&*]/, "Must contain at least one special character")
           .required("Password is required"),
+        phone_number: Yup.string()
+          .matches(/^\d{10,15}$/, "Phone number must be valid")
+          .required("Phone number is required"),
       });
 
       if (!(await schema.isValid(req.body))) throw new ValidationError();
@@ -33,7 +35,7 @@ const userController = {
       const { email } = req.body;
 
       const userExists = await User.findOne({ where: { email } });
-      if (userExists) throw new BadRequestError();
+      if (userExists) throw new BadRequestError("User already exists");
 
       const user = await User.create(req.body);
       return res.status(200).json(user);
@@ -77,6 +79,7 @@ const userController = {
         confirmPassword: Yup.string().when("password", (password, field) =>
           password ? field.required().oneOf([Yup.ref("password")]) : field
         ),
+        phone_number: Yup.string().matches(/^\d{10,15}$/),
       });
 
       if (!(await schema.isValid(req.body))) throw new ValidationError();
@@ -86,11 +89,12 @@ const userController = {
 
       if (email) {
         const userExists = await User.findOne({ where: { email } });
-        if (userExists) throw new BadRequestError();
+        if (userExists && userExists.id !== user.id)
+          throw new BadRequestError("Email already taken");
       }
 
       if (oldPassword && !(await user.checkPassword(oldPassword)))
-        throw new UnauthorizedError();
+        throw new UnauthorizedError("Old password is incorrect");
 
       const newUser = await user.update(req.body);
       return res.status(200).json(newUser);

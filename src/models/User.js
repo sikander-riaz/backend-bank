@@ -7,32 +7,44 @@ class User extends Model {
       {
         name: Sequelize.STRING,
         email: Sequelize.STRING,
-        password: Sequelize.VIRTUAL, //When it is VIRTUAL it does not exist in the database
+        phone_number: Sequelize.STRING,
+        acc_number: {
+          type: Sequelize.BIGINT,
+          allowNull: false,
+          unique: true,
+        },
+        password: Sequelize.VIRTUAL,
         password_hash: Sequelize.STRING,
       },
       {
         sequelize,
-        timestamps: true, //If it's false do not add the attributes (updatedAt, createdAt).
-        //paranoid: true, //If it's true, it does not allow deleting from the bank, but inserts column deletedAt. Timestamps need be true.
-        //underscored: true, //If it's true, does not add camelcase for automatically generated attributes, so if we define updatedAt it will be created as updated_at.
-        //freezeTableName: false, //If it's false, it will use the table name in the plural. Ex: Users
-        //tableName: 'Users' //Define table name
+        modelName: "User",
+        timestamps: true,
       }
     );
 
-    this.addHook("beforeSave", async (user) => {
+    this.addHook("beforeCreate", async (user) => {
       if (user.password) {
         user.password_hash = await bcrypt.hash(user.password, 8);
       }
+
+      user.acc_number = Math.floor(1000000000 + Math.random() * 9000000000);
     });
 
     return this;
   }
 
   static associate(models) {
-    this.belongsToMany(models.Address, {
-      through: "UserAddress",
-      foreignKey: "userId",
+    this.hasMany(models.Transaction, {
+      foreignKey: "from_account",
+      sourceKey: "acc_number",
+      as: "sentTransactions",
+    });
+
+    this.hasMany(models.Transaction, {
+      foreignKey: "to_account",
+      sourceKey: "acc_number",
+      as: "receivedTransactions",
     });
   }
 

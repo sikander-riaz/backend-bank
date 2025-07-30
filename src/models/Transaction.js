@@ -4,22 +4,17 @@ class Transaction extends Model {
   static init(sequelize) {
     super.init(
       {
-        // Define fields
         id: {
           type: DataTypes.INTEGER,
           primaryKey: true,
           autoIncrement: true,
         },
-        acc_number: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-        },
         from_account: {
-          type: DataTypes.INTEGER,
+          type: DataTypes.BIGINT, // ✅ Fixed
           allowNull: false,
         },
         to_account: {
-          type: DataTypes.INTEGER,
+          type: DataTypes.BIGINT, // ✅ Fixed
           allowNull: false,
         },
         amount: {
@@ -36,11 +31,25 @@ class Transaction extends Model {
         sequelize,
         modelName: "Transaction",
         tableName: "transactions",
-        timestamps: false, // ✅ This line must be here
+        timestamps: false,
       }
     );
 
     return this;
+  }
+
+  static associate(models) {
+    this.belongsTo(models.User, {
+      foreignKey: "from_account",
+      targetKey: "acc_number",
+      as: "sender",
+    });
+
+    this.belongsTo(models.User, {
+      foreignKey: "to_account",
+      targetKey: "acc_number",
+      as: "receiver",
+    });
   }
 }
 
