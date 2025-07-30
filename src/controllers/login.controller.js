@@ -1,8 +1,6 @@
 import * as Yup from "yup";
 import User from "../models/User.js";
-
 import JwtService from "../services/jwt.service.js";
-
 import {
   BadRequestError,
   UnauthorizedError,
@@ -13,27 +11,27 @@ const loginController = {
   login: async (req, res, next) => {
     try {
       const schema = Yup.object().shape({
-        email: Yup.string()
-          .required("Email is required")
-          .email("Invalid email"),
-        password: Yup.string()
-          .required("Password is required")
-          .min(8, "Too short"),
+        email: Yup.string().email().required("Email is required"),
+        password: Yup.string().min(8).required("Password is required"),
       });
 
       if (!(await schema.isValid(req.body))) throw new ValidationError();
 
-      let { email, password } = req.body;
+      const { email, password } = req.body;
 
       const user = await User.findOne({ where: { email } });
+      if (!user) throw new BadRequestError("Invalid email or password");
 
-      if (!user) throw new BadRequestError();
-
-      if (!(await user.checkPassword(password))) throw new UnauthorizedError();
+      const valid = await user.checkPassword(password);
+      if (!valid) throw new UnauthorizedError("Invalid email or password");
 
       const token = JwtService.jwtSign(user.id);
 
-      return res.status(200).json({ user, token });
+      return res.status(200).json({
+        message: "Login successful",
+        userId: user.id,
+        token,
+      });
     } catch (error) {
       next(error);
     }
@@ -42,8 +40,7 @@ const loginController = {
   logout: async (req, res, next) => {
     try {
       JwtService.jwtBlacklistToken(JwtService.jwtGetToken(req));
-
-      res.status(200).json({ msg: "Authorized" });
+      return res.status(200).json({ message: "Logged out" });
     } catch (error) {
       next(error);
     }

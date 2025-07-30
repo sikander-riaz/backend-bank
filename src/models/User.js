@@ -6,7 +6,11 @@ class User extends Model {
     super.init(
       {
         name: Sequelize.STRING,
-        email: Sequelize.STRING,
+        email: {
+          type: Sequelize.STRING,
+          allowNull: false,
+          unique: true,
+        },
         phone_number: Sequelize.STRING,
         acc_number: {
           type: Sequelize.BIGINT,
@@ -23,12 +27,12 @@ class User extends Model {
       }
     );
 
-    this.addHook("beforeCreate", async (user) => {
+    this.addHook("beforeCreate", (user) => {
       if (user.password) {
-        user.password_hash = await bcrypt.hash(user.password, 8);
+        user.password_hash = bcrypt.hashSync(user.password, 8); // Sync hashing
       }
 
-      user.acc_number = Math.floor(1000000000 + Math.random() * 9000000000);
+      user.acc_number = Math.floor(1000000000 + Math.random() * 9000000000); // Keep as number
     });
 
     return this;
@@ -48,8 +52,9 @@ class User extends Model {
     });
   }
 
-  checkPassword(password) {
-    return bcrypt.compareSync(password, this.password_hash);
+  // Async compare (recommended for login)
+  async checkPassword(password) {
+    return await bcrypt.compareSync(password, this.password_hash);
   }
 }
 

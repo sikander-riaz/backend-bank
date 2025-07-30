@@ -10,11 +10,11 @@ class Transaction extends Model {
           autoIncrement: true,
         },
         from_account: {
-          type: DataTypes.BIGINT, // ✅ Fixed
+          type: DataTypes.BIGINT,
           allowNull: false,
         },
         to_account: {
-          type: DataTypes.BIGINT, // ✅ Fixed
+          type: DataTypes.BIGINT,
           allowNull: false,
         },
         amount: {
