@@ -1,11 +1,13 @@
 import * as Yup from "yup";
-import User from "../models/User";
-import JwtService from "../services/jwt.service";
+import User from "../models/User.js";
+
+import JwtService from "../services/jwt.service.js";
+
 import {
   BadRequestError,
   UnauthorizedError,
   ValidationError,
-} from "../utils/ApiError";
+} from "../utils/ApiError.js";
 
 const loginController = {
   login: async (req, res, next) => {

@@ -1,6 +1,6 @@
 import * as Yup from "yup";
-import Address from "../models/Address";
-import { BadRequestError, ValidationError } from "../utils/ApiError";
+import Address from "../models/Address.js";
+import { BadRequestError, ValidationError } from "../utils/ApiError.js";
 
 const addressController = {
   add: async (req, res, next) => {
