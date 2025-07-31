@@ -1,9 +1,11 @@
+// transaction.routes.js
 import { Router } from "express";
+import authMiddleware from "../middlewares/auth.middleware.js";
 import transactionController from "../controllers/transaction.controller.js";
 
 const router = Router();
 
-router.post("/transactions/add", transactionController.create);
-router.get("/transactions/:accountNumber", transactionController.getByAccount);
+router.post("/deposit", authMiddleware, transactionController.deposit);
+router.post("/transfer", authMiddleware, transactionController.transfer);
 
-export default router;
+export default Router().use("/transactions", router);

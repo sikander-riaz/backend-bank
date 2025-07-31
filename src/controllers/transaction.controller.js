@@ -1,42 +1,74 @@
+import { BadRequestError, ValidationError } from "../utils/ApiError.js";
+import User from "../models/User.js";
 import Transaction from "../models/Transaction.js";
-import { BadRequestError } from "../utils/ApiError.js";
 
 const transactionController = {
-  create: async (req, res, next) => {
+  deposit: async (req, res, next) => {
     try {
-      const { from_account, to_account, amount } = req.body;
+      const { accountNumber, amount } = req.body;
 
-      if (!from_account || !to_account || !amount) {
-        throw new BadRequestError("Missing required fields");
+      if (!accountNumber || !amount || amount <= 0) {
+        throw new ValidationError("Valid account number and amount required");
       }
 
-      const transaction = await Transaction.create({
-        from_account,
-        to_account,
+      const user = await User.findOne({ where: { accountNumber } });
+      if (!user) throw new BadRequestError("User not found");
+
+      user.balance += parseFloat(amount);
+      await user.save();
+
+      await Transaction.create({
+        type: "deposit",
         amount,
+        receiverAccount: accountNumber, // ✅ use receiverAccount
       });
 
-      return res.status(201).json(transaction);
-    } catch (error) {
-      next(error);
+      res
+        .status(200)
+        .json({ message: "Deposit successful", newBalance: user.balance });
+    } catch (err) {
+      next(err);
     }
   },
 
-  getByAccount: async (req, res, next) => {
+  transfer: async (req, res, next) => {
     try {
-      const accountNumber = req.params.accountNumber;
+      const { senderAccount, receiverAccount, amount } = req.body;
 
-      const transactions = await Transaction.findAll({
-        where: {
-          [Sequelize.Op.or]: [
-            { from_account: accountNumber },
-            { to_account: accountNumber },
-          ],
-        },
-        order: [["date", "DESC"]],
+      if (!senderAccount || !receiverAccount || !amount || amount <= 0) {
+        throw new ValidationError("Required fields missing or invalid");
+      }
+
+      if (senderAccount === receiverAccount) {
+        throw new BadRequestError("Cannot transfer to same account");
+      }
+
+      const sender = await User.findOne({
+        where: { accountNumber: senderAccount },
+      });
+      const receiver = await User.findOne({
+        where: { accountNumber: receiverAccount },
       });
 
-      res.json(transactions);
+      if (!sender || !receiver) throw new BadRequestError("Invalid account(s)");
+
+      if (sender.balance < amount)
+        throw new BadRequestError("Insufficient balance");
+
+      sender.balance -= parseFloat(amount);
+      receiver.balance += parseFloat(amount);
+
+      await sender.save();
+      await receiver.save();
+
+      await Transaction.create({
+        type: "transfer",
+        amount,
+        senderAccount,
+        receiverAccount,
+      });
+
+      res.status(200).json({ message: "Transfer successful" });
     } catch (err) {
       next(err);
     }

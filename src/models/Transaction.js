@@ -2,54 +2,47 @@ import { Model, DataTypes } from "sequelize";
 
 class Transaction extends Model {
   static init(sequelize) {
-    super.init(
+    return super.init(
       {
-        id: {
-          type: DataTypes.INTEGER,
-          primaryKey: true,
-          autoIncrement: true,
-        },
-        from_account: {
-          type: DataTypes.BIGINT,
-          allowNull: false,
-        },
-        to_account: {
-          type: DataTypes.BIGINT,
+        type: {
+          type: DataTypes.ENUM("deposit", "transfer"),
           allowNull: false,
         },
         amount: {
           type: DataTypes.DECIMAL(10, 2),
           allowNull: false,
         },
-        date: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-          allowNull: false,
+        senderAccount: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        receiverAccount: {
+          type: DataTypes.STRING,
+          allowNull: true,
         },
       },
       {
         sequelize,
         modelName: "Transaction",
-        tableName: "transactions",
-        timestamps: false,
+        tableName: "Transactions",
+        timestamps: true,
       }
     );
-
-    return this;
   }
 
   static associate(models) {
-    this.belongsTo(models.User, {
-      foreignKey: "from_account",
-      targetKey: "acc_number",
-      as: "sender",
-    });
-
-    this.belongsTo(models.User, {
-      foreignKey: "to_account",
-      targetKey: "acc_number",
-      as: "receiver",
-    });
+    // Optional: link to User model if needed
+    // Example:
+    // this.belongsTo(models.User, {
+    //   foreignKey: "senderAccount",
+    //   targetKey: "accountNumber",
+    //   as: "Sender",
+    // });
+    // this.belongsTo(models.User, {
+    //   foreignKey: "receiverAccount",
+    //   targetKey: "accountNumber",
+    //   as: "Receiver",
+    // });
   }
 }
 
