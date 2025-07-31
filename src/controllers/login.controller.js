@@ -9,6 +9,7 @@ import {
 
 const loginController = {
   login: async (req, res, next) => {
+    console.log("🚀 Login route HIT!");
     try {
       const schema = Yup.object().shape({
         email: Yup.string().email().required("Email is required"),

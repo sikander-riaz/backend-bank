@@ -22,10 +22,28 @@ const expressService = {
       server.use(bodyParser.urlencoded({ extended: true }));
 
       for (const file of routeFiles) {
+        console.log(`[EXPRESS] Loading route file: ${file}`);
+
         const routeModule = await import(`../routes/${file}`);
         const route = routeModule.default || Object.values(routeModule)[0];
+
+        // ✅ Check if router has any routes
+        if (!route.stack || route.stack.length === 0) {
+          console.warn(`[WARNING] ${file} contains NO routes`);
+        } else {
+          console.log(`[OK] ${file} contains ${route.stack.length} routes`);
+          route.stack.forEach((layer) => {
+            if (layer.route) {
+              console.log(
+                ` ↳ Route: [${Object.keys(layer.route.methods)
+                  .join(", ")
+                  .toUpperCase()}] /api${layer.route.path}`
+              );
+            }
+          });
+        }
+
         server.use("/api", route);
-        // server.use("/", route);
       }
 
       server.use(globalErrorHandler);
