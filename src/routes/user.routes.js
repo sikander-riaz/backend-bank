@@ -3,6 +3,7 @@ import userController from "../controllers/user.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = Router();
+console.log(Router());
 
 router.post("/user", userController.add);
 router.get("/user", userController.get);

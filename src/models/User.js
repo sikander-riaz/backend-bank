@@ -17,7 +17,7 @@ class User extends Model {
           allowNull: false,
           unique: true,
         },
-        password: Sequelize.VIRTUAL,
+        password: Sequelize.VIRTUAL, // not saved in DB
         password_hash: Sequelize.STRING,
       },
       {
@@ -27,14 +27,19 @@ class User extends Model {
       }
     );
 
-    this.addHook("beforeCreate", (user) => {
+    // 🔁 Runs BEFORE Sequelize validates the instance
+    this.addHook("beforeValidate", (user) => {
       if (user.password) {
         user.password_hash = bcrypt.hashSync(user.password, 8);
       }
 
-      user.acc_number = Math.floor(1000000000 + Math.random() * 9000000000);
+      // generate 10-digit account number if not already set
+      if (!user.acc_number) {
+        user.acc_number = Math.floor(1000000000 + Math.random() * 9000000000);
+      }
     });
 
+    console.log("I am here");
     return this;
   }
 
@@ -53,7 +58,7 @@ class User extends Model {
   }
 
   async checkPassword(password) {
-    return await bcrypt.compareSync(password, this.password_hash);
+    return bcrypt.compare(password, this.password_hash);
   }
 }
 
