@@ -18,13 +18,15 @@ const expressService = {
     try {
       const server = express();
 
+      server.use(bodyParser.json());
+      server.use(bodyParser.urlencoded({ extended: true }));
+
       for (const file of routeFiles) {
         const routeModule = await import(`../routes/${file}`);
         const route = routeModule.default || Object.values(routeModule)[0];
         server.use("/api", route);
       }
 
-      server.use(bodyParser.json());
       server.use(globalErrorHandler);
 
       const port = process.env.SERVER_PORT || 3000;

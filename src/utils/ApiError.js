@@ -35,10 +35,10 @@ const DEFAULT_ERRORS = {
 
 /**
  * @class BaseError
- * @param {number} statusCode - HTTP status code
- * @param {boolean} isOperational - Is this error operational
- * @param {string} message - Error message
- * @param {string} type - Error type
+ * @param {number} statusCode -
+ * @param {boolean} isOperational -
+ * @param {string} message -
+ * @param {string} type -
  */
 class BaseError extends Error {
   constructor(message, statusCode, type, isOperational) {
@@ -50,7 +50,7 @@ class BaseError extends Error {
 }
 
 /**
- * @class ApiError
+ * @class
  */
 export class ApiError extends BaseError {
   constructor(message, statusCode, type) {
@@ -58,9 +58,9 @@ export class ApiError extends BaseError {
   }
 }
 /**
- * Check if error is an api specific error
- * @param {Error} err - Error object
- * @returns {boolean} - Is this error an ApiError
+ *
+ * @param {Error} err -
+ * @returns {boolean} -
  */
 export const IsApiError = (err) =>
   err instanceof ApiError ? err.isOperational : false;

@@ -29,10 +29,10 @@ class User extends Model {
 
     this.addHook("beforeCreate", (user) => {
       if (user.password) {
-        user.password_hash = bcrypt.hashSync(user.password, 8); // Sync hashing
+        user.password_hash = bcrypt.hashSync(user.password, 8);
       }
 
-      user.acc_number = Math.floor(1000000000 + Math.random() * 9000000000); // Keep as number
+      user.acc_number = Math.floor(1000000000 + Math.random() * 9000000000);
     });
 
     return this;
@@ -52,7 +52,6 @@ class User extends Model {
     });
   }
 
-  // Async compare (recommended for login)
   async checkPassword(password) {
     return await bcrypt.compareSync(password, this.password_hash);
   }
