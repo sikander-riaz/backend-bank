@@ -25,6 +25,7 @@ const expressService = {
         const routeModule = await import(`../routes/${file}`);
         const route = routeModule.default || Object.values(routeModule)[0];
         server.use("/api", route);
+        // server.use("/", route);
       }
 
       server.use(globalErrorHandler);

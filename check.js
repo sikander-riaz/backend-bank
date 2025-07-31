@@ -5,7 +5,7 @@ const db = require("./models/queries");
 const port = 3002;
 const cors = require("cors");
 
-app.use(cors()); // Enable CORS for all routes
+app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
