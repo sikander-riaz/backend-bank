@@ -1,5 +1,6 @@
 // src/index.js
 import dotenv from "dotenv";
+import cors from "cors";
 import expressService from "./services/express.service.js";
 import sequelizeService from "./services/sequelize.service.js";
 

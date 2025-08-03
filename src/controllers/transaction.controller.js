@@ -20,7 +20,7 @@ const transactionController = {
       await Transaction.create({
         type: "deposit",
         amount,
-        receiverAccount: accountNumber, // ✅ use receiverAccount
+        receiverAccount: accountNumber,
       });
 
       res

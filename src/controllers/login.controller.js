@@ -9,7 +9,7 @@ import {
 
 const loginController = {
   login: async (req, res, next) => {
-    console.log("🚀 Login route HIT!");
+    console.log(" Login route HIT!");
     try {
       const schema = Yup.object().shape({
         email: Yup.string().email().required("Email is required"),
@@ -30,8 +30,14 @@ const loginController = {
 
       return res.status(200).json({
         message: "Login successful",
-        userId: user.id,
-        token,
+        token, //  Add this line to include the JWT token
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          accountNumber: user.accountNumber,
+          balance: user.balance,
+        },
       });
     } catch (error) {
       next(error);

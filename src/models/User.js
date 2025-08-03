@@ -27,7 +27,6 @@ class User extends Model {
       }
     );
 
-    // 🔁 Runs BEFORE Sequelize validates the instance
     this.addHook("beforeValidate", (user) => {
       if (user.password) {
         user.password_hash = bcrypt.hashSync(user.password, 8);
