@@ -7,5 +7,10 @@ const router = Router();
 
 router.post("/deposit", authMiddleware, transactionController.deposit);
 router.post("/transfer", authMiddleware, transactionController.transfer);
+router.get(
+  "/history",
+  authMiddleware,
+  transactionController.getUserTransactions
+);
 
-export default Router().use("/transactions", router);
+export default router;

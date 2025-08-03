@@ -1,40 +1,29 @@
 "use strict";
 
 module.exports = {
-  up: (queryInterface, Sequelize) =>
-    queryInterface.createTable("Users", {
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.createTable("Transactions", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      name: {
+      type: {
+        type: Sequelize.ENUM("deposit", "transfer"),
         allowNull: false,
+      },
+      amount: {
+        type: Sequelize.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      senderAccount: {
         type: Sequelize.STRING,
-      },
-      email: {
-        allowNull: false,
-        unique: true,
-        type: Sequelize.STRING,
-      },
-      password_hash: {
-        allowNull: false,
-        type: Sequelize.STRING,
-      },
-      phone_number: {
-        allowNull: false,
-        type: Sequelize.STRING,
-      },
-      acc_number: {
-        allowNull: false,
-        unique: true,
-        type: Sequelize.BIGINT,
-      },
-      balance: {
         allowNull: true,
-        type: Sequelize.INTEGER,
-        defaultValue: 0,
+      },
+      receiverAccount: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,
@@ -46,7 +35,10 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
-    }),
+    });
+  },
 
-  down: (queryInterface) => queryInterface.dropTable("Users"),
+  down: async (queryInterface) => {
+    await queryInterface.dropTable("Transactions");
+  },
 };

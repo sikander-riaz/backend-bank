@@ -19,6 +19,10 @@ class User extends Model {
         },
         password: Sequelize.VIRTUAL, // not saved in DB
         password_hash: Sequelize.STRING,
+        balance: {
+          type: Sequelize.INTEGER,
+          defaultValue: 0,
+        },
       },
       {
         sequelize,
@@ -44,13 +48,12 @@ class User extends Model {
 
   static associate(models) {
     this.hasMany(models.Transaction, {
-      foreignKey: "from_account",
+      foreignKey: "senderAccount",
       sourceKey: "acc_number",
       as: "sentTransactions",
     });
-
     this.hasMany(models.Transaction, {
-      foreignKey: "to_account",
+      foreignKey: "receiverAccount",
       sourceKey: "acc_number",
       as: "receivedTransactions",
     });

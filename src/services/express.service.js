@@ -1,6 +1,8 @@
+// services/express.service.js
 import express from "express";
 import fs from "fs";
 import path from "path";
+import cors from "cors";
 import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
 import globalErrorHandler from "../middlewares/errorHandler.middleware.js";
@@ -18,6 +20,14 @@ const expressService = {
     try {
       const server = express();
 
+      // ✅ Add CORS middleware before routes
+      server.use(
+        cors({
+          origin: "http://localhost:3001", // adjust to your frontend port
+          credentials: true,
+        })
+      );
+
       server.use(bodyParser.json());
       server.use(bodyParser.urlencoded({ extended: true }));
 
@@ -27,7 +37,6 @@ const expressService = {
         const routeModule = await import(`../routes/${file}`);
         const route = routeModule.default || Object.values(routeModule)[0];
 
-        // ✅ Check if router has any routes
         if (!route.stack || route.stack.length === 0) {
           console.warn(`[WARNING] ${file} contains NO routes`);
         } else {
@@ -46,9 +55,10 @@ const expressService = {
         server.use("/api", route);
       }
 
+      // Global error handler
       server.use(globalErrorHandler);
 
-      const port = process.env.SERVER_PORT || 3000;
+      const port = process.env.SERVER_PORT || 3002;
       server.listen(port, () => {
         console.log(`[EXPRESS] Server listening on port ${port}`);
       });

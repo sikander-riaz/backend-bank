@@ -8,46 +8,57 @@ import {
 } from "../utils/ApiError.js";
 
 const loginController = {
+  // LOGIN
   login: async (req, res, next) => {
-    console.log(" Login route HIT!");
+    console.log("Login route HIT!");
     try {
       const schema = Yup.object().shape({
-        email: Yup.string().email().required("Email is required"),
-        password: Yup.string().min(8).required("Password is required"),
+        email: Yup.string()
+          .email("Invalid email")
+          .required("Email is required"),
+        password: Yup.string()
+          .min(8, "Password must be at least 8 characters")
+          .required("Password is required"),
       });
 
-      if (!(await schema.isValid(req.body))) throw new ValidationError();
+      // Validate with detailed errors
+      await schema.validate(req.body, { abortEarly: false });
 
       const { email, password } = req.body;
-
       const user = await User.findOne({ where: { email } });
+
       if (!user) throw new BadRequestError("Invalid email or password");
 
-      const valid = await user.checkPassword(password);
-      if (!valid) throw new UnauthorizedError("Invalid email or password");
+      const isValid = await user.checkPassword(password);
+      if (!isValid) throw new UnauthorizedError("Invalid email or password");
 
       const token = JwtService.jwtSign(user.id);
 
       return res.status(200).json({
         message: "Login successful",
-        token, //  Add this line to include the JWT token
+        token,
         user: {
           id: user.id,
           name: user.name,
           email: user.email,
-          accountNumber: user.accountNumber,
+          acc_number: user.acc_number, // match your DB field
           balance: user.balance,
         },
       });
     } catch (error) {
+      if (error.name === "ValidationError") {
+        return res.status(400).json({ error: error.errors });
+      }
       next(error);
     }
   },
 
+  // LOGOUT
   logout: async (req, res, next) => {
     try {
-      JwtService.jwtBlacklistToken(JwtService.jwtGetToken(req));
-      return res.status(200).json({ message: "Logged out" });
+      const token = JwtService.jwtGetToken(req);
+      JwtService.jwtBlacklistToken(token);
+      return res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
       next(error);
     }

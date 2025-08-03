@@ -4,7 +4,6 @@ import { BadRequestError } from "../utils/ApiError.js";
 
 const userController = {
   // SIGN UP (CREATE USER)
-
   add: async (req, res, next) => {
     console.log("REQ BODY:", req.body);
     try {
@@ -27,15 +26,14 @@ const userController = {
           .required("Phone number is required"),
       });
 
-      // Validate full request and get all errors if any
       await schema.validate(req.body, { abortEarly: false });
 
       const { email } = req.body;
-
       const userExists = await User.findOne({ where: { email } });
       if (userExists) throw new BadRequestError("Email already exists");
 
       const user = await User.create(req.body);
+
       return res.status(201).json({
         message: "User created successfully",
         user: {
@@ -54,21 +52,25 @@ const userController = {
     }
   },
 
-  // GET ALL USERS
+  // GET ALL USERS (SAFE)
   get: async (req, res, next) => {
     try {
-      const users = await User.findAll();
+      const users = await User.findAll({
+        attributes: ["id", "name", "email", "phone_number", "acc_number"],
+      });
       return res.status(200).json(users);
     } catch (error) {
       next(error);
     }
   },
 
-  // GET USER BY ID
+  // GET USER BY ID (SAFE)
   find: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const user = await User.findByPk(id);
+      const user = await User.findByPk(id, {
+        attributes: ["id", "name", "email", "phone_number", "acc_number"],
+      });
       if (!user) return res.status(404).json({ error: "User not found" });
 
       return res.status(200).json(user);
@@ -77,7 +79,7 @@ const userController = {
     }
   },
 
-  // UPDATE USER
+  // UPDATE USER (SAFE)
   update: async (req, res, next) => {
     try {
       const { email, oldPassword, password } = req.body;
@@ -86,8 +88,9 @@ const userController = {
 
       if (email && email !== user.email) {
         const exists = await User.findOne({ where: { email } });
-        if (exists)
+        if (exists) {
           return res.status(400).json({ error: "Email already in use" });
+        }
       }
 
       if (oldPassword && !(await user.checkPassword(oldPassword))) {
@@ -98,7 +101,9 @@ const userController = {
       if (password) updateData.password = password;
 
       const updatedUser = await user.update(updateData);
-      return res.status(200).json(updatedUser);
+      const { password_hash, ...safeUser } = updatedUser.get({ plain: true });
+
+      return res.status(200).json(safeUser);
     } catch (error) {
       next(error);
     }
