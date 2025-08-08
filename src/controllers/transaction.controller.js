@@ -7,24 +7,16 @@ const transactionController = {
   // DEPOSIT
   deposit: async (req, res, next) => {
     try {
-      console.log("Incoming deposit request body:", req.body);
+      const { acc_number, amount } = req.body;
 
-      const { accountNumber, amount } = req.body;
-
-      if (!accountNumber || isNaN(amount) || parseFloat(amount) <= 0) {
-        console.log("Validation failed for:", { accountNumber, amount });
+      if (!acc_number || isNaN(amount) || parseFloat(amount) <= 0) {
         throw new ValidationError("Valid account number and amount required");
       }
 
-      const user = await User.findOne({ where: { accountNumber } });
-      if (!user) {
-        console.log("User not found for accountNumber:", accountNumber);
-        throw new BadRequestError("User not found");
-      }
+      const user = await User.findOne({ where: { acc_number } });
+      if (!user) throw new BadRequestError("User not found");
 
       const depositAmount = parseFloat(amount);
-      console.log("Depositing amount:", depositAmount, "to user:", user.name);
-
       user.balance += depositAmount;
       await user.save();
 
@@ -34,14 +26,11 @@ const transactionController = {
         receiverAccount: accountNumber,
       });
 
-      console.log("Deposit successful. New balance:", user.balance);
-
       return res.status(200).json({
         message: "Deposit successful",
         newBalance: user.balance,
       });
     } catch (err) {
-      console.error("Deposit error:", err);
       next(err);
     }
   },
@@ -49,40 +38,33 @@ const transactionController = {
   // TRANSFER
   transfer: async (req, res, next) => {
     try {
-      console.log("Incoming transfer request body:", req.body);
-
       const { senderAccount, receiverAccount, amount } = req.body;
 
       if (
         !senderAccount ||
         !receiverAccount ||
-        senderAccount === receiverAccount ||
         isNaN(amount) ||
         parseFloat(amount) <= 0
       ) {
         throw new ValidationError(
-          "Valid sender, receiver, and amount required"
+          "Valid sender, receiver and amount are required"
         );
       }
 
       const sender = await User.findOne({
-        where: { accountNumber: senderAccount },
+        where: { acc_number: senderAccount },
       });
       const receiver = await User.findOne({
-        where: { accountNumber: receiverAccount },
+        where: { acc_number: receiverAccount },
       });
 
-      if (!sender || !receiver) {
+      if (!sender || !receiver)
         throw new BadRequestError("Sender or receiver not found");
-      }
 
       const transferAmount = parseFloat(amount);
-
-      if (sender.balance < transferAmount) {
+      if (sender.balance < transferAmount)
         throw new BadRequestError("Insufficient balance");
-      }
 
-      // Perform transfer
       sender.balance -= transferAmount;
       receiver.balance += transferAmount;
 
@@ -101,20 +83,19 @@ const transactionController = {
         updatedSenderBalance: sender.balance,
       });
     } catch (err) {
-      console.error("Transfer error:", err);
       next(err);
     }
   },
 
-  // HISTORY
+  // TRANSACTION HISTORY
   getUserTransactions: async (req, res, next) => {
     try {
       const user = req.user;
       const transactions = await Transaction.findAll({
         where: {
           [Op.or]: [
-            { senderAccount: user.accountNumber },
-            { receiverAccount: user.accountNumber },
+            { senderAccount: user.acc_number },
+            { receiverAccount: user.acc_number },
           ],
         },
         order: [["createdAt", "DESC"]],
