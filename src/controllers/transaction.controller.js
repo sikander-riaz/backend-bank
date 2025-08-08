@@ -7,16 +7,24 @@ const transactionController = {
   // DEPOSIT
   deposit: async (req, res, next) => {
     try {
+      console.log("Incoming deposit request body:", req.body); // 🚨 log request payload
+
       const { accountNumber, amount } = req.body;
 
       if (!accountNumber || isNaN(amount) || parseFloat(amount) <= 0) {
+        console.log("Validation failed for:", { accountNumber, amount });
         throw new ValidationError("Valid account number and amount required");
       }
 
       const user = await User.findOne({ where: { accountNumber } });
-      if (!user) throw new BadRequestError("User not found");
+      if (!user) {
+        console.log("User not found for accountNumber:", accountNumber);
+        throw new BadRequestError("User not found");
+      }
 
       const depositAmount = parseFloat(amount);
+      console.log("Depositing amount:", depositAmount, "to user:", user.name);
+
       user.balance += depositAmount;
       await user.save();
 
@@ -26,11 +34,14 @@ const transactionController = {
         receiverAccount: accountNumber,
       });
 
+      console.log("Deposit successful. New balance:", user.balance);
+
       return res.status(200).json({
         message: "Deposit successful",
         newBalance: user.balance,
       });
     } catch (err) {
+      console.error("Deposit error:", err); // 🔴 log error to backend console
       next(err);
     }
   },

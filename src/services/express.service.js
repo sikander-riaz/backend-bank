@@ -20,10 +20,14 @@ const expressService = {
     try {
       const server = express();
 
-      // ✅ Add CORS middleware before routes
+      server.use((req, res, next) => {
+        console.log("Request Origin:", req.headers.origin);
+        next();
+      });
+
       server.use(
         cors({
-          origin: "http://localhost:3001", // adjust to your frontend port
+          origin: "http://localhost:3000",
           credentials: true,
         })
       );
