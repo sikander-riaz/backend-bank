@@ -42,7 +42,7 @@ class User extends Model {
       }
     });
 
-    console.log("I am here");
+    console.log("I am here accc ");
     return this;
   }
 

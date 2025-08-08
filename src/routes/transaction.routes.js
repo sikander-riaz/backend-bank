@@ -1,14 +1,21 @@
-// transaction.routes.js
 import { Router } from "express";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import transactionController from "../controllers/transaction.controller.js";
 
 const router = Router();
 
-router.post("/deposit", authMiddleware, transactionController.deposit);
+console.log("transaction.routes.js loaded");
+
+router.post(
+  "/deposit", // ✅ fixed
+  authMiddleware,
+  transactionController.deposit
+);
+
 router.post("/transfer", authMiddleware, transactionController.transfer);
+
 router.get(
-  "/history",
+  "/history", //
   authMiddleware,
   transactionController.getUserTransactions
 );

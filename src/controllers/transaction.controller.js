@@ -7,7 +7,7 @@ const transactionController = {
   // DEPOSIT
   deposit: async (req, res, next) => {
     try {
-      console.log("Incoming deposit request body:", req.body); // 🚨 log request payload
+      console.log("Incoming deposit request body:", req.body);
 
       const { accountNumber, amount } = req.body;
 
@@ -41,7 +41,7 @@ const transactionController = {
         newBalance: user.balance,
       });
     } catch (err) {
-      console.error("Deposit error:", err); // 🔴 log error to backend console
+      console.error("Deposit error:", err);
       next(err);
     }
   },
@@ -49,19 +49,20 @@ const transactionController = {
   // TRANSFER
   transfer: async (req, res, next) => {
     try {
+      console.log("Incoming transfer request body:", req.body);
+
       const { senderAccount, receiverAccount, amount } = req.body;
 
       if (
         !senderAccount ||
         !receiverAccount ||
+        senderAccount === receiverAccount ||
         isNaN(amount) ||
         parseFloat(amount) <= 0
       ) {
-        throw new ValidationError("Required fields missing or invalid");
-      }
-
-      if (senderAccount === receiverAccount) {
-        throw new BadRequestError("Cannot transfer to the same account");
+        throw new ValidationError(
+          "Valid sender, receiver, and amount required"
+        );
       }
 
       const sender = await User.findOne({
@@ -71,13 +72,17 @@ const transactionController = {
         where: { accountNumber: receiverAccount },
       });
 
-      if (!sender || !receiver) throw new BadRequestError("Invalid account(s)");
+      if (!sender || !receiver) {
+        throw new BadRequestError("Sender or receiver not found");
+      }
 
       const transferAmount = parseFloat(amount);
+
       if (sender.balance < transferAmount) {
         throw new BadRequestError("Insufficient balance");
       }
 
+      // Perform transfer
       sender.balance -= transferAmount;
       receiver.balance += transferAmount;
 
@@ -93,18 +98,18 @@ const transactionController = {
 
       return res.status(200).json({
         message: "Transfer successful",
-        senderBalance: sender.balance,
-        receiverBalance: receiver.balance,
+        updatedSenderBalance: sender.balance,
       });
     } catch (err) {
+      console.error("Transfer error:", err);
       next(err);
     }
   },
 
-  // TRANSACTION HISTORY
+  // HISTORY
   getUserTransactions: async (req, res, next) => {
     try {
-      const user = req.user; // set by auth middleware
+      const user = req.user;
       const transactions = await Transaction.findAll({
         where: {
           [Op.or]: [
