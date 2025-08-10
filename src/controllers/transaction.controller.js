@@ -23,7 +23,8 @@ const transactionController = {
       await Transaction.create({
         type: "deposit",
         amount: depositAmount,
-        receiverAccount: accountNumber,
+        to_acc: acc_number,
+        from_acc: req.body.from_acc || null, // allow specifying source account
       });
 
       return res.status(200).json({
@@ -74,8 +75,8 @@ const transactionController = {
       await Transaction.create({
         type: "transfer",
         amount: transferAmount,
-        senderAccount,
-        receiverAccount,
+        from_acc: senderAccount,
+        to_acc: receiverAccount,
       });
 
       return res.status(200).json({
@@ -94,8 +95,8 @@ const transactionController = {
       const transactions = await Transaction.findAll({
         where: {
           [Op.or]: [
-            { senderAccount: user.acc_number },
-            { receiverAccount: user.acc_number },
+            { from_acc: user.acc_number }, //
+            { to_acc: user.acc_number }, //
           ],
         },
         order: [["createdAt", "DESC"]],

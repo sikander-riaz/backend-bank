@@ -7,7 +7,7 @@ const router = Router();
 console.log("transaction.routes.js loaded");
 
 router.post(
-  "/deposit", // ✅ fixed
+  "/deposit", //
   authMiddleware,
   transactionController.deposit
 );

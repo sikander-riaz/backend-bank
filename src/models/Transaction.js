@@ -12,11 +12,11 @@ class Transaction extends Model {
           type: DataTypes.DECIMAL(10, 2),
           allowNull: false,
         },
-        senderAccount: {
+        from_acc: {
           type: DataTypes.STRING,
           allowNull: true,
         },
-        receiverAccount: {
+        to_acc: {
           type: DataTypes.STRING,
           allowNull: true,
         },
