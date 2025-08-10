@@ -17,7 +17,7 @@ class User extends Model {
           allowNull: false,
           unique: true,
         },
-        password: Sequelize.VIRTUAL, // not saved in DB
+        password: Sequelize.VIRTUAL,
         password_hash: Sequelize.STRING,
         balance: {
           type: Sequelize.INTEGER,
@@ -32,13 +32,15 @@ class User extends Model {
     );
 
     this.addHook("beforeValidate", (user) => {
-      if (user.password) {
-        user.password_hash = bcrypt.hashSync(user.password, 8);
-      }
-
       // generate 10-digit account number if not already set
       if (!user.acc_number) {
         user.acc_number = Math.floor(1000000000 + Math.random() * 9000000000);
+      }
+    });
+
+    this.addHook("beforeSave", (user) => {
+      if (user.password) {
+        user.password_hash = bcrypt.hashSync(user.password, 8);
       }
     });
 
@@ -48,12 +50,12 @@ class User extends Model {
 
   static associate(models) {
     this.hasMany(models.Transaction, {
-      foreignKey: "senderAccount",
+      foreignKey: "from_acc",
       sourceKey: "acc_number",
       as: "sentTransactions",
     });
     this.hasMany(models.Transaction, {
-      foreignKey: "receiverAccount",
+      foreignKey: "to_acc",
       sourceKey: "acc_number",
       as: "receivedTransactions",
     });

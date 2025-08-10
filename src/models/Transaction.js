@@ -13,11 +13,11 @@ class Transaction extends Model {
           allowNull: false,
         },
         from_acc: {
-          type: DataTypes.STRING,
+          type: DataTypes.BIGINT,
           allowNull: true,
         },
         to_acc: {
-          type: DataTypes.STRING,
+          type: DataTypes.BIGINT,
           allowNull: true,
         },
       },

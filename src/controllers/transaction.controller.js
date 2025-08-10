@@ -23,8 +23,8 @@ const transactionController = {
       await Transaction.create({
         type: "deposit",
         amount: depositAmount,
-        to_acc: acc_number,
-        from_acc: req.body.from_acc || null, // allow specifying source account
+        to_acc: Number(acc_number),
+        from_acc: req.body.from_acc ? Number(req.body.from_acc) : null,
       });
 
       return res.status(200).json({
@@ -39,25 +39,16 @@ const transactionController = {
   // TRANSFER
   transfer: async (req, res, next) => {
     try {
-      const { senderAccount, receiverAccount, amount } = req.body;
+      const { from_acc, to_acc, amount } = req.body;
 
-      if (
-        !senderAccount ||
-        !receiverAccount ||
-        isNaN(amount) ||
-        parseFloat(amount) <= 0
-      ) {
+      if (!from_acc || !to_acc || isNaN(amount) || parseFloat(amount) <= 0) {
         throw new ValidationError(
           "Valid sender, receiver and amount are required"
         );
       }
 
-      const sender = await User.findOne({
-        where: { acc_number: senderAccount },
-      });
-      const receiver = await User.findOne({
-        where: { acc_number: receiverAccount },
-      });
+      const sender = await User.findOne({ where: { acc_number: from_acc } });
+      const receiver = await User.findOne({ where: { acc_number: to_acc } });
 
       if (!sender || !receiver)
         throw new BadRequestError("Sender or receiver not found");
@@ -75,8 +66,8 @@ const transactionController = {
       await Transaction.create({
         type: "transfer",
         amount: transferAmount,
-        from_acc: senderAccount,
-        to_acc: receiverAccount,
+        from_acc,
+        to_acc,
       });
 
       return res.status(200).json({
