@@ -23,19 +23,6 @@ class User extends Model {
           type: Sequelize.INTEGER,
           defaultValue: 0,
         },
-        // 🔹 New fields for verification
-        isVerified: {
-          type: Sequelize.BOOLEAN,
-          defaultValue: false,
-        },
-        verificationToken: {
-          type: Sequelize.STRING,
-          allowNull: true,
-        },
-        verificationTokenExpire: {
-          type: Sequelize.DATE,
-          allowNull: true,
-        },
       },
       {
         sequelize,
@@ -45,6 +32,7 @@ class User extends Model {
     );
 
     this.addHook("beforeValidate", (user) => {
+      // generate 10-digit account number if not already set
       if (!user.acc_number) {
         user.acc_number = Math.floor(1000000000 + Math.random() * 9000000000);
       }
@@ -56,6 +44,7 @@ class User extends Model {
       }
     });
 
+    console.log("I am here accc ");
     return this;
   }
 

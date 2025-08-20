@@ -8,7 +8,6 @@ const authMiddleware = async (req, res, next) => {
     const token = JwtService.jwtGetToken(req);
 
     const decoded = JwtService.jwtVerify(token);
-    req.userId = decoded.id;
 
     req.user = decoded;
 
