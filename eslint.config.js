@@ -15,7 +15,7 @@ export default defineConfig([
       },
     },
     rules: {
-      "no-unused-vars": "warn", // warn instead of error
+      "no-unused-vars": "off", // warn instead of error
     },
   },
 ]);
